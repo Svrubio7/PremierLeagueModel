@@ -1,30 +1,17 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-import time
+from bs4 import BeautifulSoup
 
-# Set up Chrome options (you can uncomment headless mode if desired)
-chrome_options = Options()
-chrome_options.add_argument("--headless")  # Run in headless mode
-chrome_options.add_argument("--disable-gpu")
-chrome_options.add_argument("--window-size=1920,1080")
 
-# Initialize the Chrome driver
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+data_ids = []
+# Open the file and read its contents
+for i in range(1, 27):
+    with open("C:/Users/svrub/Documents/Mis cosillas/apuestas/PremierLeagueModel/htmlscripts/Dataids/round20.txt", "r", encoding="utf-8") as file:
+        content = file.read()
+        soup = BeautifulSoup(content, "html.parser")
 
-# Open the target webpage (replace with your URL)
-driver.get("https://www.sofascore.com/tournament/football/england/premier-league/17#id:61627")
+        for element in soup.find_all(attrs={"data-id": True}):
+            data_ids.append(element["data-id"])
 
-# Wait for dynamic content to load completely
-time.sleep(5)  # You may adjust this or use explicit waits as needed
 
-# Get the fully rendered HTML
-rendered_html = driver.page_source
 
-# Save the HTML to a file
-with open("C:/Users/svrub/Documents/Mis cosillas/apuestas/PremierLeagueModel/htmlscripts/rendered.html", "w", encoding="utf-8") as file:
-    file.write(rendered_html)
-
-# Close the browser
-driver.quit()
+# Print the array of data-id values
+print(len(data_ids))
