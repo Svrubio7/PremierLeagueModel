@@ -4,6 +4,8 @@ from bs4 import BeautifulSoup
 import time
 import random
 import csv
+from matchdicts import team_name_mapping, mapping
+
 
 base_url = "https://fbref.com"
 main_url = "https://fbref.com/en/comps/9/schedule/Premier-League-Scores-and-Fixtures"
@@ -30,6 +32,7 @@ for match in matches:
     home_team_el = match.find("td", {"data-stat": "home_team"})
     away_team_el = match.find("td", {"data-stat": "away_team"})
     score_el = match.find("td", {"data-stat": "score"})
+    ref = match.find("td", {"data-stat": "referee"})
     
     # Only process rows that have all three elements
     if not (home_team_el and away_team_el and score_el):
@@ -38,16 +41,19 @@ for match in matches:
     home_team = home_team_el.text.strip()
     away_team = away_team_el.text.strip()
     score = score_el.text.strip()
+    referee = ref.text.strip()
 
     match_data.append({
         "TEAM": home_team,
         "RIVAL": away_team,
-        "RESULT": score
+        "RESULT": score,
+        "REFEREE": referee
     })
     match_data.append({
         "TEAM": away_team,
         "RIVAL": home_team,
-        "RESULT": score
+        "RESULT": score,
+        "REFEREE": referee
     })
     
     # Optional small delay (not critical for a single page)
@@ -70,11 +76,18 @@ def build_results_dict(csv_path: str) -> dict:
             team_raw = row["TEAM"].strip()
             rival_raw = row["RIVAL"].strip()
             result = row["RESULT"].strip()
+            referee = row["REFEREE"].strip()
             
             # normalize team names
             team_norm = team_raw.lower().replace(" ", "-")
             rival_norm = rival_raw.lower().replace(" ", "-")
             
-            results[(team_norm, rival_norm)] = result
+            team_norm = mapping.get(team_norm, team_norm) if team_norm in mapping else mapping.get(team_raw.lower(), team_norm)
+            rival_norm = mapping.get(rival_norm, rival_norm) if rival_norm in mapping else mapping.get(rival_raw.lower(), rival_norm)
+            
+            key = (team_norm, rival_norm)
+            if key not in results:
+                results[key] = []
+            results[key].append({'result': result, 'referee': referee})
     return results
-    
+        

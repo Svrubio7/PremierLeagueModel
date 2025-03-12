@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 
 data_ids = []
 # Open the file and read its contents
-for i in range(1, 27):
+for i in range(1, 29):
     with open(f"/Users/jd/Documents/PremierLeagueModel/PremierLeagueModel/htmlscripts/Dataids/round{i}.txt", "r", encoding="utf-8") as file:
         content = file.read()
         soup = BeautifulSoup(content, "html.parser")
