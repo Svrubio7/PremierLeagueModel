@@ -100,7 +100,7 @@ def write_csv(filename, rows):
     for row in rows:
         keys.update(row.keys())
     # Ensure these columns appear first.
-    priority_cols = ["match_number", "match_id", "team", "opponent", "RESULT"]
+    priority_cols = ["match_number", "match_id", "round", "team", "opponent", "RESULT"]
     ordered_keys = priority_cols + sorted(k for k in keys if k not in priority_cols)
     
     with open(filename, "w", newline="", encoding="utf-8") as f:
@@ -130,9 +130,11 @@ def main():
         if mid_str in all_match_dict:
             actual_home = all_match_dict[mid_str]["home"]
             actual_away = all_match_dict[mid_str]["away"]
+            round = all_match_dict[mid_str]["round"]
         else:
             actual_home = "unknown-home"
             actual_away = "unknown-away"
+            round = "unknown-round"
 
         for period in periods:
             home_stats, away_stats = process_period(data, period)
@@ -144,6 +146,7 @@ def main():
             row_home = {
                 "match_number": match_counter,
                 "match_id": match_id,
+                "round": round,
                 "team": actual_home,
                 "opponent": actual_away
             }
@@ -152,6 +155,7 @@ def main():
             row_away = {
                 "match_number": match_counter,
                 "match_id": match_id,
+                "round": round,
                 "team": actual_away,
                 "opponent": actual_home
             }

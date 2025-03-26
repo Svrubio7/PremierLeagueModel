@@ -1,6 +1,8 @@
 import csv
+import os
+import pandas as pd
 from collections import defaultdict
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
 
 # ------------------------
 # Normalization & Parsing
@@ -59,15 +61,28 @@ def parse_stat(stat: str) -> float:
     except ValueError:
         return 0.0
 
-def load_matches(csv_path: str) -> list[dict]:
-    """Load matches from a CSV into a list of dictionaries."""
+# ------------------------
+# Updated load_matches Function
+# ------------------------
+def load_matches(file_path: str) -> list[dict]:
+    """
+    Load matches from a CSV or XLSX file into a list of dictionaries.
+    The function checks the file extension and uses the appropriate pandas function.
+    """
     matches = []
-    with open(csv_path, 'r', encoding='utf-8') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            row['team'] = normalize_team_name(row['team'])
-            row['opponent'] = normalize_team_name(row['opponent'])
-            matches.append(row)
+    ext = os.path.splitext(file_path)[1].lower()
+    if ext in ['.xlsx', '.xls']:
+        df = pd.read_excel(file_path)
+    elif ext == '.csv':
+        df = pd.read_csv(file_path)
+    else:
+        raise ValueError(f"Unsupported file extension: {ext}")
+    
+    for _, row in df.iterrows():
+        row_dict = row.to_dict()
+        row_dict['team'] = normalize_team_name(str(row_dict.get('team', '')))
+        row_dict['opponent'] = normalize_team_name(str(row_dict.get('opponent', '')))
+        matches.append(row_dict)
     return matches
 
 # ------------------------
@@ -193,7 +208,7 @@ def calculate_averages_dedup(dedup_matches: dict, team: str) -> dict:
             stats['Goals scored']['count'] += 1
             stats['Goals conceded']['count'] += 1
             for field in stat_fields:
-                stats[field]['sum'] += parse_stat(row.get(field, ''))
+                stats[field]['sum'] += parse_stat(str(row.get(field, '')))
                 stats[field]['count'] += 1
         return {field: (stats[field]['sum'] / stats[field]['count'] if stats[field]['count'] > 0 else 0.0)
                 for field in ['Goals scored', 'Goals conceded'] + stat_fields}
@@ -204,13 +219,38 @@ def calculate_averages_dedup(dedup_matches: dict, team: str) -> dict:
     }
 
 # ------------------------
+# Functions to Import External XLSX Tables
+# ------------------------
+def copy_sheet(src_sheet, dest_sheet):
+    """Copy cell values from src_sheet to dest_sheet."""
+    for row in src_sheet.iter_rows():
+        for cell in row:
+            dest_sheet[cell.coordinate].value = cell.value
+
+def add_external_tables(workbook, external_file_paths: list):
+    """
+    For each external XLSX file, load its workbook and copy each worksheet
+    into the final workbook as a new sheet.
+    """
+    for file_path in external_file_paths:
+        wb_ext = load_workbook(file_path)
+        for sheet in wb_ext.worksheets:
+            base_name = os.path.splitext(os.path.basename(file_path))[0]
+            new_sheet_title = f"Imported_{base_name}_{sheet.title}"
+            # Ensure sheet title length is within Excel's limits (31 characters)
+            new_sheet_title = new_sheet_title[:31]
+            dest_sheet = workbook.create_sheet(title=new_sheet_title)
+            copy_sheet(sheet, dest_sheet)
+
+# ------------------------
 # XLSX Output Function
 # ------------------------
-def write_period_output(period: str, rows: list[dict], team1: str, team2: str, output_filename: str):
+def write_period_output(period: str, rows: list[dict], team1: str, team2: str, output_filename: str, external_xlsx_paths: list):
     """
     Write the analysis for a given period to an XLSX file.
     For head-to-head and last 5 matches, both rows for each match are output
     with extra columns indicating perspective and adjusted result.
+    At the end, external XLSX tables are imported as additional worksheets.
     """
     # Group rows by match_id
     dedup_matches = deduplicate_matches(rows)
@@ -230,6 +270,7 @@ def write_period_output(period: str, rows: list[dict], team1: str, team2: str, o
     
     wb = Workbook()
     ws = wb.active
+    ws.title = "Main Analysis"
     
     # Write period title
     ws.append([f"{period} Analysis"])
@@ -263,7 +304,7 @@ def write_period_output(period: str, rows: list[dict], team1: str, team2: str, o
     ws.append([])
     
     # Section 3: Last 5 Matches for team2
-    ws.append([f"Last 5 Matches for {normalize_team_name(team2)}"])
+    ws.append([f"Last 5 Matches for {normalize_team_name(team2)} (each match shows two rows)"])
     if team2_groups:
         header = list(add_extra_columns(team2_groups[0]['home'], "home", team2).keys())
         ws.append(header)
@@ -307,20 +348,35 @@ def write_period_output(period: str, rows: list[dict], team1: str, team2: str, o
         ]
         ws.append(row)
     
+    # ------------------------
+    # Import External XLSX Tables
+    # ------------------------
+    add_external_tables(wb, external_xlsx_paths)
+    
     wb.save(output_filename)
 
 # ------------------------
 # Main: File Paths & Team Names set in Code
 # ------------------------
 def main():
-    # Supply the CSV file paths and team names here
-    full_csv = "/Users/jd/Documents/PremierLeagueModel/matches_ALL.csv"         # Path to the full match CSV
-    first_half_csv = "/Users/jd/Documents/PremierLeagueModel/matches_1ST.csv"     # Path to the first half CSV
-    second_half_csv = "/Users/jd/Documents/PremierLeagueModel/matches_2ND.csv"    # Path to the second half CSV
-    team1 = "Man Utd"                    # First team name
-    team2 = "Chelsea"                    # Second team name
+    # Supply the CSV/XLSX file paths and team names here
+    full_csv = "/Users/jd/Documents/PremierLeagueModel/matches_1ST.csv"         # Can be CSV or XLSX
+    first_half_csv = "/Users/jd/Documents/PremierLeagueModel/matches_1ST.csv"     # Can be CSV or XLSX
+    second_half_csv = "/Users/jd/Documents/PremierLeagueModel/matches_2ND.csv"    # Can be CSV or XLSX
+    team1 = "man-utd"                    # First team name
+    team2 = "leicester"                      # Second team name
 
-    # Load all three datasets
+    # List external XLSX files that you already have and want to import
+    external_xlsx_paths = [
+        "/Users/jd/Documents/PremierLeagueModel/leicester-man-utd-tiroslibres.xlsx",
+        "/Users/jd/Documents/PremierLeagueModel/leicester-man-utd-tirostotales.xlsx",
+        "/Users/jd/Documents/PremierLeagueModel/leicester-man-utdsaquesbanda.xlsx",
+        "/Users/jd/Documents/PremierLeagueModel/man-utd-leicester-tiroslibres.xlsx",
+        "/Users/jd/Documents/PremierLeagueModel/man-utd-leicester-tirostotales.xlsx",
+        "/Users/jd/Documents/PremierLeagueModel/man-utd-leicestersaquesbanda.xlsx"
+    ]
+    
+    # Load all three datasets (works with both XLSX and CSV)
     datasets = {
         'Full Match': load_matches(full_csv),
         'First Half': load_matches(first_half_csv),
@@ -329,8 +385,8 @@ def main():
     
     # Process each period and write an output XLSX file
     for period, rows in datasets.items():
-        output_filename = f"{period.replace(' ', '_').lower()}_{normalize_team_name(team1)}_vs_{normalize_team_name(team2)}.xlsx"
-        write_period_output(period, rows, team1, team2, output_filename)
+        output_filename = f"{period.replace(' ', '_').lower()},{team1}_vs_{team2}.xlsx"
+        write_period_output(period, rows, team1, team2, output_filename, external_xlsx_paths)
         print(f"Output written to {output_filename}")
 
 if __name__ == "__main__":

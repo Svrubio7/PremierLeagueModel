@@ -30,7 +30,7 @@ def normalize_team_name(raw_name:str) -> str:
     lower_name = raw_name.strip().lower()
     return mapping.get(lower_name, lower_name.replace(" ", "-"))
 
-def build_match_team_dict(file_path: str) -> dict:
+def build_match_team_dict(file_path: str, round_num: int) -> dict:
     """
     Reads an HTML file from the given path and returns a dictionary:
       {
@@ -58,7 +58,7 @@ def build_match_team_dict(file_path: str) -> dict:
         home_team = normalize_team_name(raw_home_team)
         away_team = normalize_team_name(raw_away_team)
 
-        match_dict[match_id] = {"home": home_team, "away": away_team}
+        match_dict[match_id] = {"home": home_team, "away": away_team, "round": round_num}
 
     return match_dict
 
@@ -66,7 +66,7 @@ def build_match_team_dict(file_path: str) -> dict:
 all_match_dict = {}
 for i in range(1, 29):
     path = f"/Users/jd/Documents/PremierLeagueModel/PremierLeagueModel/htmlscripts/Dataids/round{i}.txt"
-    round_dict = build_match_team_dict(path)
+    round_dict = build_match_team_dict(path, i)
     all_match_dict.update(round_dict)
 
 print("Merged match team dictionary:")
