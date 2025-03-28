@@ -64,7 +64,7 @@ def build_match_team_dict(file_path: str, round_num: int) -> dict:
 
 # Merge dictionaries from rounds 1 to 26
 all_match_dict = {}
-for i in range(1, 29):
+for i in range(1, 30):
     path = f"/Users/jd/Documents/PremierLeagueModel/PremierLeagueModel/htmlscripts/Dataids/round{i}.txt"
     round_dict = build_match_team_dict(path, i)
     all_match_dict.update(round_dict)

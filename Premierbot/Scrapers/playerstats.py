@@ -67,6 +67,7 @@ def process_player_data(data: dict, match_id: int, match_info: dict):
                 # Additional team details.
                 row["shirtNumber"] = entry.get("shirtNumber")
                 row["substitute"] = entry.get("substitute")
+                row["marketValue"] = entry.get("value")
                 
                 # Extract statistics.
                 stats = entry.get("statistics", {})
