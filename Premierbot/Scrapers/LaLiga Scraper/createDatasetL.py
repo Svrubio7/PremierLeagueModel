@@ -3,13 +3,13 @@ import csv
 from rich import print
 import random
 import time
-from statsperhalf import data_ids
-from matchdicts import all_match_dict
-from resultscraper import build_results_dict
+from statsPerHalfL import data_ids
+from matchDictsL import all_match_dict
+from resultsScraperL import build_results_dict
 
 # Load the results CSV into a dictionary. 
 # (Assumes build_results_dict returns keys as tuples (team, opponent) in lowercase.)
-results_dict = build_results_dict("statspermatch_simple.csv")
+results_dict = build_results_dict("statspermatch_simpleLaLiga.csv")
 
 HEADERS = {
     "User-Agent": (
@@ -203,9 +203,9 @@ def main():
     add_results(stats_1st)
     add_results(stats_2nd)  # Note: careful with variable names (2ND vs. 2nd)
 
-    write_csv("matches_ALL_Premier.csv", stats_all)
-    write_csv("matches_1ST_Premier.csv", stats_1st)
-    write_csv("matches_2ND_Premier.csv", stats_2nd)
+    write_csv("matches_ALL_LaLiga.csv", stats_all)
+    write_csv("matches_1ST_LaLiga.csv", stats_1st)
+    write_csv("matches_2ND_LaLiga.csv", stats_2nd)
 
 if __name__ == "__main__":
     main()

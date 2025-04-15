@@ -3,8 +3,8 @@ import csv
 from rich import print
 import random
 import time
-from statsperhalf import data_ids
-from matchdicts import all_match_dict
+from statsPerHalfL import data_ids
+from matchDictsL import all_match_dict
 
 # Reuse your existing headers.
 HEADERS = {
@@ -133,7 +133,7 @@ def main():
         # print(f"Sleeping for {sleep_time:.2f} seconds...")
         # time.sleep(sleep_time)
     
-    write_csv("player_statsPremier.csv", all_players_stats)
+    write_csv("player_statsBundesliga.csv", all_players_stats)
 
 if __name__ == "__main__":
     main()

@@ -3,8 +3,8 @@ from bs4 import BeautifulSoup
 
 data_ids = []
 # Open the file and read its contents
-for i in range(1, 33):
-    with open(f"/Users/jd/Documents/PremierLeagueModel/PremierLeagueModel/htmlscripts/Premier/round{i}.txt", "r", encoding="utf-8") as file:
+for i in range(1, 31):
+    with open(f"/Users/jd/Documents/PremierLeagueModel/PremierLeagueModel/htmlscripts/LaLiga/round{i}.txt", "r", encoding="utf-8") as file:
         content = file.read()
         soup = BeautifulSoup(content, "html.parser")
         for element in soup.find_all(attrs={"data-id": True}):

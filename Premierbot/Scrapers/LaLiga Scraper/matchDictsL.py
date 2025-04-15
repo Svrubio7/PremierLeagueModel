@@ -1,28 +1,33 @@
 from bs4 import BeautifulSoup
 
 team_name_mapping = {
-    'Manchester Utd': 'man-utd',
-    'Fulham': 'fulham',
-    'Ipswich Town': 'ipswich',
-    'Liverpool': 'liverpool',
-    'Newcastle Utd': 'newcastle',
-    "Nott'ham Forest": 'forest',
-    'Southampton': 'southampton',
-    'West Ham': 'west-ham',
-    'Aston Villa': 'aston-villa',
-    'Crystal Palace': 'crystal-palace',
-    'Brentford': 'brentford',
-    'Manchester City': 'man-city',
-    'Leicester City': 'leicester',
-    'Chelsea': 'chelsea',
-    'Everton': 'everton',
-    'Brentford': 'brentford',
-    'Watford': 'watford',
-    'Tottenham': 'tottenham',
-    'Wolves': 'wolves',
-    'Arsenal': 'arsenal',
-    'Brighton': 'brighton',
+    'Barcelona': 'barcelona',
+    'Real Madrid': 'real-madrid',
+    'Atlético Madrid': 'atl.-madrid',
+    'Athletic Club': 'athletic-club',
+    'Valencia': 'valencia',
+    'Getafe': 'getafe',
+    'Villarreal': 'villarreal',
+    'Real Sociedad': 'real-sociedad',
+    'Betis': 'real-betis',
+    'Celta Vigo': 'celta',
+    'Granada': 'granada',
+    'Osasuna': 'osasuna',
+    'Mallorca': 'mallorca',
+    'Rayo Vallecano': 'rayo-vallecano',
+    'Alavés': 'alaves',
+    'Girona': 'girona',
+    'Valladolid': 'real-valladolid',
+    'Leganés': 'leganes',
+    'celtax2':'celta',
+    'Las Palmas': 'las-palmas',
+    'real-sociedadx2':'real-sociedad',
+    'leganésx2':'leganes',
+    'Espanyol': 'espanyol',
+    'alavésx2':'alaves',
     }
+    
+
 
 mapping = {k.lower(): v for k, v in team_name_mapping.items()}
 
@@ -64,8 +69,8 @@ def build_match_team_dict(file_path: str, round_num: int) -> dict:
 
 # Merge dictionaries from rounds 1 to 26
 all_match_dict = {}
-for i in range(1, 33):
-    path = f"/Users/jd/Documents/PremierLeagueModel/PremierLeagueModel/htmlscripts/Premier/round{i}.txt"
+for i in range(1, 31):
+    path = f"/Users/jd/Documents/PremierLeagueModel/PremierLeagueModel/htmlscripts/LaLiga/round{i}.txt"
     round_dict = build_match_team_dict(path, i)
     all_match_dict.update(round_dict)
 
